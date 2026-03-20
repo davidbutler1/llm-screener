@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml>
+  <records>
+    <record>
+      <database name="embase" path="">embase</database>
+      <rec-number>1</rec-number>
+      <ref-type name="Journal Article">17</ref-type>
+      <contributors>
+        <authors>
+          <author><style face="normal" font="default" size="100%">Patel, Rohan K.</style></author>
+          <author><style face="normal" font="default" size="100%">Larsson, Erik M.</style></author>
+        </authors>
+      </contributors>
+      <titles>
+        <title><style face="normal" font="default" size="100%">Fibrinogen levels as a predictor of outcome in isolated traumatic brain injury</style></title>
+        <secondary-title><style face="normal" font="default" size="100%">Brain Injury</style></secondary-title>
+      </titles>
+      <periodical>
+        <full-title><style face="normal" font="default" size="100%">Brain Injury</style></full-title>
+      </periodical>
+      <volume><style face="normal" font="default" size="100%">36</style></volume>
+      <number><style face="normal" font="default" size="100%">7</style></number>
+      <dates>
+        <year><style face="normal" font="default" size="100%">2022</style></year>
+      </dates>
+      <abstract><style face="normal" font="default" size="100%">Objective: To determine whether admission fibrinogen levels predict 30-day functional outcome in adults with isolated traumatic brain injury. Methods: Retrospective analysis of 215 consecutive patients. Fibrinogen 1.5 g/L at admission was defined as hypofibrinogenaemia. Primary outcome was Glasgow Outcome Scale at 30 days. Results: Hypofibrinogenaemia was present in 28% of patients and was independently associated with poor outcome (OR 3.1, 95% CI 1.8-5.4). Conclusions: Low fibrinogen at admission is a useful prognostic marker in isolated TBI.</style></abstract>
+      <keywords>
+        <keyword><style face="normal" font="default" size="100%">fibrinogen</style></keyword>
+        <keyword><style face="normal" font="default" size="100%">traumatic brain injury</style></keyword>
+        <keyword><style face="normal" font="default" size="100%">coagulopathy</style></keyword>
+        <keyword><style face="normal" font="default" size="100%">prognosis</style></keyword>
+      </keywords>
+      <electronic-resource-num><style face="normal" font="default" size="100%">10.1080/02699052.2022.2045123</style></electronic-resource-num>
+      <language><style face="normal" font="default" size="100%">English</style></language>
+    </record>
+
+    <record>
+      <database name="embase" path="">embase</database>
+      <rec-number>2</rec-number>
+      <ref-type name="Journal Article">17</ref-type>
+      <contributors>
+        <authors>
+          <author><style face="normal" font="default" size="100%">Smith, John A.</style></author>
+          <author><style face="normal" font="default" size="100%">Jones, Mary B.</style></author>
+        </authors>
+      </contributors>
+      <titles>
+        <title><style face="normal" font="default" size="100%">Coagulopathy after isolated traumatic brain injury: a prospective cohort study</style></title>
+        <secondary-title><style face="normal" font="default" size="100%">Journal of Neurotrauma</style></secondary-title>
+      </titles>
+      <volume><style face="normal" font="default" size="100%">38</style></volume>
+      <number><style face="normal" font="default" size="100%">4</style></number>
+      <dates>
+        <year><style face="normal" font="default" size="100%">2021</style></year>
+      </dates>
+      <abstract><style face="normal" font="default" size="100%">DUPLICATE — same DOI as RIS record 1. Should be deduplicated away.</style></abstract>
+      <electronic-resource-num><style face="normal" font="default" size="100%">10.1089/neu.2020.7412</style></electronic-resource-num>
+      <language><style face="normal" font="default" size="100%">English</style></language>
+    </record>
+  </records>
+</xml>

@@ -1,0 +1,19 @@
+Paper details:
+
+Title: {title}
+
+Abstract: {abstract}
+
+Decide if this paper meets the inclusion criteria for the systematic review.
+
+Reply using this exact format (3 lines, no extra text):
+Decision: include | exclude_no_relevance | exclude_low_relevance | exclude_review | uncertain
+Reason: one or two sentences explaining the decision
+Confidence: a number between 0.0 and 1.0
+
+Decision options:
+  include              — paper meets all inclusion criteria
+  exclude_no_relevance — paper is clearly unrelated to the review topic
+  exclude_low_relevance — paper is tangentially related but does not meet criteria
+  exclude_review       — paper is a review/meta-analysis, not primary research
+  uncertain            — abstract is insufficient to make a confident decision

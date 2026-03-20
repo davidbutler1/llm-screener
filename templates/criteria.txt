@@ -1,0 +1,13 @@
+INCLUSION CRITERIA
+- [Describe your population, e.g. "Adult patients (≥18 years) with confirmed traumatic brain injury"]
+- [Describe your intervention/exposure, e.g. "Studies reporting coagulopathy markers (PT, PTT, INR, fibrinogen, platelet count)"]
+- [Describe your outcome, e.g. "Primary outcome: coagulopathy incidence or severity following isolated TBI"]
+- [Study design, e.g. "Original research: RCTs, cohort studies, case-control studies, case series (≥5 patients)"]
+- [Language, e.g. "Full text available in English"]
+
+EXCLUSION CRITERIA
+- [e.g. "Polytrauma (injuries to other body regions alongside TBI)"]
+- [e.g. "Paediatric patients (<18 years)"]
+- [e.g. "Review articles, editorials, letters, conference abstracts without full data"]
+- [e.g. "Animal studies or in vitro studies"]
+- [e.g. "Studies where coagulopathy data cannot be separated from non-TBI patients"]
