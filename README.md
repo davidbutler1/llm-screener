@@ -11,6 +11,7 @@ Stage 3  export    — split classified CSV → include / uncertain / exclude fi
 ---
 
 ## Installation
+
 ```bash
 pip install -e .
 ```
@@ -83,7 +84,8 @@ sent to the LLM. Safe to kill and restart at any time.
 | `--model` | `qwen3.5:0.8b` | Ollama model tag |
 | `--temperature` | `0.1` | Sampling temperature |
 | `--max-tokens` | `512` | Max tokens generated per record |
-| `--num-ctx` | `8192` | Model context window |
+| `--num-ctx` | `16384` | Model context window |
+| `--max-abstract-chars` | `12000` | Truncate abstracts longer than this before sending to the LLM. Truncated records are flagged with `abstract_truncated=yes` in the output. Raise this if your abstracts are very long and your `--num-ctx` is large enough. |
 | `--retry` | `3` | Retry attempts on LLM failure |
 | `--log-every` | `10` | Progress log frequency |
 
@@ -92,7 +94,7 @@ sent to the LLM. Safe to kill and restart at any time.
 Split the classified CSV into separate files by decision group.
 
 ```bash
-screener export \
+autoscreen export \
   --input classified.csv \
   --output-dir ./results/ \
   --format ris         # or: xml
@@ -152,4 +154,4 @@ values in Stage 3 are `include` and `uncertain`; everything else maps to the
 
 **Added by classify:**
 
-`decision`, `reason`, `confidence`, `llm_model`, `classified_at`
+`decision`, `reason`, `confidence`, `llm_model`, `classified_at`, `abstract_truncated`

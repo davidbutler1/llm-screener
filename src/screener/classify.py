@@ -21,7 +21,39 @@ CLASSIFY_FIELDS: List[str] = CANONICAL_FIELDS + [
     'confidence',
     'llm_model',
     'classified_at',
+    'abstract_truncated',
 ]
+
+
+# ---------------------------------------------------------------------------
+# Abstract truncation
+# ---------------------------------------------------------------------------
+
+def _truncate_abstract(
+    abstract: str,
+    max_chars: int,
+    record_id: str,
+) -> Tuple[str, bool]:
+    """
+    Truncate abstract to max_chars at a word boundary.
+    Returns (text, was_truncated).
+    Logs a warning when truncation occurs.
+    """
+    if not abstract or len(abstract) <= max_chars:
+        return abstract, False
+
+    # Cut at the last space before the limit so we don't split mid-word
+    cut = abstract[:max_chars]
+    boundary = cut.rfind(' ')
+    if boundary > max_chars // 2:
+        cut = cut[:boundary]
+
+    logging.warning(
+        'record_id=%s: abstract truncated from %d to %d characters '
+        '(limit: --max-abstract-chars %d).',
+        record_id, len(abstract), len(cut), max_chars,
+    )
+    return cut + ' [TRUNCATED]', True
 
 # ---------------------------------------------------------------------------
 # Response parsing
@@ -175,6 +207,7 @@ def run(
     num_ctx: int,
     retry: int,
     log_every: int,
+    max_abstract_chars: int,
 ) -> None:
     """
     Classify every row in input_csv using Ollama and write results to output_csv.
@@ -211,7 +244,8 @@ def run(
 
     # Determine output field list (canonical + classify columns, no duplicates)
     output_fields: List[str] = list(input_fieldnames)
-    for col in ('decision', 'reason', 'confidence', 'llm_model', 'classified_at'):
+    for col in ('decision', 'reason', 'confidence', 'llm_model', 'classified_at',
+                'abstract_truncated'):
         if col not in output_fields:
             output_fields.append(col)
 
@@ -238,6 +272,11 @@ def run(
             # --- Build per-row prompt ---
             title    = row.get('title', '')
             abstract = row.get('abstract', '')
+
+            abstract, was_truncated = _truncate_abstract(
+                abstract, max_abstract_chars, rid
+            )
+
             try:
                 user_prompt = user_template.format(
                     title=title,
@@ -277,11 +316,12 @@ def run(
             # If all retries exhausted, defaults remain (uncertain / llm_error / 0.0)
 
             # --- Annotate row and write ---
-            row['decision']      = decision
-            row['reason']        = reason
-            row['confidence']    = f'{confidence:.3f}'
-            row['llm_model']     = model
-            row['classified_at'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+            row['decision']           = decision
+            row['reason']             = reason
+            row['confidence']         = f'{confidence:.3f}'
+            row['llm_model']          = model
+            row['classified_at']      = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+            row['abstract_truncated'] = 'yes' if was_truncated else 'no'
 
             writer.writerow(row)
             fh.flush()  # ensure partial progress survives interruption

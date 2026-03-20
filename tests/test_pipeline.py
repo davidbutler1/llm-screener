@@ -327,7 +327,7 @@ class TestClassify:
         sys_f, usr_f = self._make_prompts(tmp_path)
 
         with patch('urllib.request.urlopen', return_value=self._mock_ollama_response()):
-            run(inp, out, sys_f, usr_f, None, 'qwen3.5:0.8b', 0.1, 512, 8192, 3, 1)
+            run(inp, out, sys_f, usr_f, None, 'qwen3.5:0.8b', 0.1, 512, 16384, 3, 1, 12000)
 
         rows = _read_csv(out)
         assert len(rows) == 2
@@ -336,6 +336,7 @@ class TestClassify:
             assert row['llm_model'] == 'qwen3.5:0.8b'
             assert row['classified_at']
             assert float(row['confidence']) == pytest.approx(0.9)
+            assert row['abstract_truncated'] == 'no'
 
     def test_classify_adds_columns(self, tmp_path):
         from screener.classify import run
@@ -344,7 +345,7 @@ class TestClassify:
         sys_f, usr_f = self._make_prompts(tmp_path)
 
         with patch('urllib.request.urlopen', return_value=self._mock_ollama_response()):
-            run(inp, out, sys_f, usr_f, None, 'qwen3.5:0.8b', 0.1, 512, 8192, 3, 1)
+            run(inp, out, sys_f, usr_f, None, 'qwen3.5:0.8b', 0.1, 512, 16384, 3, 1, 12000)
 
         rows = _read_csv(out)
         assert 'decision' in rows[0]
@@ -352,6 +353,7 @@ class TestClassify:
         assert 'confidence' in rows[0]
         assert 'llm_model' in rows[0]
         assert 'classified_at' in rows[0]
+        assert 'abstract_truncated' in rows[0]
 
     def test_resume_skips_done_rows(self, tmp_path):
         """If output already has a row with a decision, it should not be re-sent to LLM."""
@@ -373,6 +375,7 @@ class TestClassify:
                 'confidence': '0.95',
                 'llm_model': 'old-model',
                 'classified_at': '2024-01-01T00:00:00Z',
+                'abstract_truncated': 'no',
             })
 
         call_count = 0
@@ -383,15 +386,15 @@ class TestClassify:
             return self._mock_ollama_response('exclude_no_relevance')
 
         with patch('urllib.request.urlopen', side_effect=mock_urlopen):
-            run(inp, out, sys_f, usr_f, None, 'qwen3.5:0.8b', 0.1, 512, 8192, 3, 1)
+            run(inp, out, sys_f, usr_f, None, 'qwen3.5:0.8b', 0.1, 512, 16384, 3, 1, 12000)
 
         # Only 1 call for record_id=2; record_id=1 skipped
         assert call_count == 1
 
         rows = _read_csv(out)
         by_id = {r['record_id']: r for r in rows}
-        assert by_id['1']['decision'] == 'include'       # preserved
-        assert by_id['2']['decision'] == 'exclude_no_relevance'  # newly classified
+        assert by_id['1']['decision'] == 'include'
+        assert by_id['2']['decision'] == 'exclude_no_relevance'
 
     def test_llm_failure_writes_uncertain(self, tmp_path):
         from screener.classify import run
@@ -400,7 +403,7 @@ class TestClassify:
         sys_f, usr_f = self._make_prompts(tmp_path)
 
         with patch('urllib.request.urlopen', side_effect=RuntimeError('EMPTY_RESPONSE')):
-            run(inp, out, sys_f, usr_f, None, 'qwen3.5:0.8b', 0.1, 512, 8192, 1, 1)
+            run(inp, out, sys_f, usr_f, None, 'qwen3.5:9b', 0.1, 256, 16384, 1, 1, 12000)
 
         rows = _read_csv(out)
         for row in rows:
@@ -428,11 +431,81 @@ class TestClassify:
             return self._mock_ollama_response()
 
         with patch('urllib.request.urlopen', side_effect=mock_urlopen):
-            run(inp, out, sys_f, usr_f, crit_f, 'model', 0.1, 512, 8192, 1, 1)
+            run(inp, out, sys_f, usr_f, crit_f, 'model', 0.1, 512, 16384, 1, 1, 12000)
 
         assert captured_payloads, 'No calls made'
         system_used = captured_payloads[0]['system']
         assert criteria_text in system_used
+
+    def test_abstract_truncation(self, tmp_path):
+        """Abstracts over max_abstract_chars should be truncated and flagged."""
+        from screener.classify import run, CANONICAL_FIELDS
+
+        long_abstract = 'word ' * 5000  # ~25000 chars
+        p = tmp_path / 'records.csv'
+        with p.open('w', newline='', encoding='utf-8') as fh:
+            writer = csv.DictWriter(fh, fieldnames=CANONICAL_FIELDS, extrasaction='ignore')
+            writer.writeheader()
+            writer.writerow({
+                'record_id': '1', 'source_file': 'test.ris',
+                'ref_type': 'Journal Article', 'title': 'Long abstract paper',
+                'authors': 'A, B.', 'year': '2021', 'journal': 'J',
+                'volume': '1', 'number': '1', 'abstract': long_abstract,
+                'doi': '10.1/x', 'urls': '', 'keywords': '',
+                'publisher': '', 'isbn': '', 'language': 'English',
+            })
+
+        out = tmp_path / 'classified.csv'
+        sys_f = tmp_path / 'sys.txt'
+        usr_f = tmp_path / 'usr.txt'
+        sys_f.write_text('Reviewer.', encoding='utf-8')
+        usr_f.write_text('Title: {title}\nAbstract: {abstract}', encoding='utf-8')
+
+        captured = []
+
+        def mock_urlopen(req, timeout=None):
+            captured.append(json.loads(req.data.decode()))
+            return self._mock_ollama_response()
+
+        with patch('urllib.request.urlopen', side_effect=mock_urlopen):
+            run(p, out, sys_f, usr_f, None, 'model', 0.1, 512, 16384, 1, 1, 12000)
+
+        rows = _read_csv(out)
+        assert rows[0]['abstract_truncated'] == 'yes'
+        # Prompt sent to LLM should not contain the full abstract
+        prompt_sent = captured[0]['prompt']
+        assert '[TRUNCATED]' in prompt_sent
+        assert len(prompt_sent) < len(long_abstract)
+
+    def test_short_abstract_not_truncated(self, tmp_path):
+        """Abstracts under the limit should pass through unchanged."""
+        from screener.classify import run, CANONICAL_FIELDS
+
+        short_abstract = 'A brief abstract about TBI coagulopathy.'
+        p = tmp_path / 'records.csv'
+        with p.open('w', newline='', encoding='utf-8') as fh:
+            writer = csv.DictWriter(fh, fieldnames=CANONICAL_FIELDS, extrasaction='ignore')
+            writer.writeheader()
+            writer.writerow({
+                'record_id': '1', 'source_file': 'test.ris',
+                'ref_type': 'Journal Article', 'title': 'Short abstract paper',
+                'authors': 'A, B.', 'year': '2021', 'journal': 'J',
+                'volume': '1', 'number': '1', 'abstract': short_abstract,
+                'doi': '10.1/y', 'urls': '', 'keywords': '',
+                'publisher': '', 'isbn': '', 'language': 'English',
+            })
+
+        out = tmp_path / 'classified.csv'
+        sys_f = tmp_path / 'sys.txt'
+        usr_f = tmp_path / 'usr.txt'
+        sys_f.write_text('Reviewer.', encoding='utf-8')
+        usr_f.write_text('Title: {title}\nAbstract: {abstract}', encoding='utf-8')
+
+        with patch('urllib.request.urlopen', return_value=self._mock_ollama_response()):
+            run(p, out, sys_f, usr_f, None, 'model', 0.1, 256, 16384, 1, 1, 12000)
+
+        rows = _read_csv(out)
+        assert rows[0]['abstract_truncated'] == 'no'
 
 
 # ---------------------------------------------------------------------------
@@ -654,7 +727,7 @@ class TestEndToEnd:
 
         with patch('urllib.request.urlopen', side_effect=mock_urlopen):
             classify(records_csv, classified_csv, sys_f, usr_f, None,
-                     'model', 0.1, 512, 8192, 1, 100)
+                     'model', 0.1, 512, 16384, 1, 100, 12000)
 
         classified = _read_csv(classified_csv)
         assert len(classified) == 6

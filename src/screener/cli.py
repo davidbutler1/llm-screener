@@ -33,6 +33,7 @@ def _cmd_classify(args: argparse.Namespace) -> None:
         num_ctx=args.num_ctx,
         retry=args.retry,
         log_every=args.log_every,
+        max_abstract_chars=args.max_abstract_chars,
     )
 
 
@@ -158,6 +159,16 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         default=16384,
         help='Model context window in tokens (default: 16384).',
+    )
+    p_classify.add_argument(
+        '--max-abstract-chars',
+        type=int,
+        default=12000,
+        help=(
+            'Truncate abstracts to this many characters before sending to the LLM '
+            '(default: 12000). Truncated records are flagged in the abstract_truncated '
+            'column. Increase if your abstracts are long and your num-ctx is large enough.'
+        ),
     )
     p_classify.add_argument(
         '--retry',
