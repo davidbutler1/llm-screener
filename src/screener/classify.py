@@ -107,6 +107,7 @@ def _call_ollama(
             'num_ctx':     num_ctx,
         },
         'stream': False,
+        'think': False,
     }
     data = json.dumps(payload).encode('utf-8')
     req = urllib.request.Request(

@@ -11,13 +11,30 @@ Stage 3  export    — split classified CSV → include / uncertain / exclude fi
 ---
 
 ## Installation
-
 ```bash
 pip install -e .
 ```
 
-Requires Python ≥ 3.8 and no third-party dependencies.  
-For Stage 2 you need [Ollama](https://ollama.com) running locally.
+Requires Python ≥ 3.8 and no third-party dependencies.
+
+### Ollama (required for Stage 2)
+
+[Ollama](https://ollama.com) runs the AI model locally — your data never leaves your machine.
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://ollama.com/install.ps1 | iex
+```
+
+Then pull a model:
+```bash
+ollama pull qwen3.5:0.8b
+```
 
 ---
 
@@ -52,7 +69,7 @@ screener classify \
   --system-prompt templates/system_prompt.txt \
   --user-prompt   templates/user_prompt.txt \
   --criteria-file templates/criteria.txt \
-  --model qwen3.5:9b
+  --model qwen3.5:0.8b
 ```
 
 **Resume support:** if `classified.csv` already exists and contains rows with a
@@ -63,7 +80,7 @@ sent to the LLM. Safe to kill and restart at any time.
 
 | Flag | Default | Description |
 |---|---|---|
-| `--model` | `qwen3.5:9b` | Ollama model tag |
+| `--model` | `qwen3.5:0.8b` | Ollama model tag |
 | `--temperature` | `0.1` | Sampling temperature |
 | `--max-tokens` | `512` | Max tokens generated per record |
 | `--num-ctx` | `8192` | Model context window |
