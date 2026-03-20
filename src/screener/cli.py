@@ -138,8 +138,8 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_classify.add_argument(
         '--model',
-        default='qwen2.5:7b-instruct',
-        help='Ollama model tag (default: qwen2.5:7b-instruct).',
+        default='qwen3.5:0.8b',
+        help='Ollama model tag (default: qwen3.5:0.8b).',
     )
     p_classify.add_argument(
         '--temperature',
@@ -156,8 +156,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_classify.add_argument(
         '--num-ctx',
         type=int,
-        default=8192,
-        help='Model context window in tokens (default: 8192).',
+        default=16384,
+        help='Model context window in tokens (default: 16384).',
     )
     p_classify.add_argument(
         '--retry',

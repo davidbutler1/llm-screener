@@ -327,13 +327,13 @@ class TestClassify:
         sys_f, usr_f = self._make_prompts(tmp_path)
 
         with patch('urllib.request.urlopen', return_value=self._mock_ollama_response()):
-            run(inp, out, sys_f, usr_f, None, 'qwen2.5:7b', 0.1, 512, 8192, 3, 1)
+            run(inp, out, sys_f, usr_f, None, 'qwen3.5:0.8b', 0.1, 512, 8192, 3, 1)
 
         rows = _read_csv(out)
         assert len(rows) == 2
         for row in rows:
             assert row['decision'] == 'include'
-            assert row['llm_model'] == 'qwen2.5:7b'
+            assert row['llm_model'] == 'qwen3.5:0.8b'
             assert row['classified_at']
             assert float(row['confidence']) == pytest.approx(0.9)
 
@@ -344,7 +344,7 @@ class TestClassify:
         sys_f, usr_f = self._make_prompts(tmp_path)
 
         with patch('urllib.request.urlopen', return_value=self._mock_ollama_response()):
-            run(inp, out, sys_f, usr_f, None, 'qwen2.5:7b', 0.1, 512, 8192, 3, 1)
+            run(inp, out, sys_f, usr_f, None, 'qwen3.5:0.8b', 0.1, 512, 8192, 3, 1)
 
         rows = _read_csv(out)
         assert 'decision' in rows[0]
@@ -383,7 +383,7 @@ class TestClassify:
             return self._mock_ollama_response('exclude_no_relevance')
 
         with patch('urllib.request.urlopen', side_effect=mock_urlopen):
-            run(inp, out, sys_f, usr_f, None, 'qwen2.5:7b', 0.1, 512, 8192, 3, 1)
+            run(inp, out, sys_f, usr_f, None, 'qwen3.5:0.8b', 0.1, 512, 8192, 3, 1)
 
         # Only 1 call for record_id=2; record_id=1 skipped
         assert call_count == 1
@@ -400,7 +400,7 @@ class TestClassify:
         sys_f, usr_f = self._make_prompts(tmp_path)
 
         with patch('urllib.request.urlopen', side_effect=RuntimeError('EMPTY_RESPONSE')):
-            run(inp, out, sys_f, usr_f, None, 'qwen2.5:7b', 0.1, 512, 8192, 1, 1)
+            run(inp, out, sys_f, usr_f, None, 'qwen3.5:0.8b', 0.1, 512, 8192, 1, 1)
 
         rows = _read_csv(out)
         for row in rows:
