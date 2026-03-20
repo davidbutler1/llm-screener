@@ -94,7 +94,7 @@ sent to the LLM. Safe to kill and restart at any time.
 Split the classified CSV into separate files by decision group.
 
 ```bash
-autoscreen export \
+screener export \
   --input classified.csv \
   --output-dir ./results/ \
   --format ris         # or: xml
